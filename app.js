@@ -1,6 +1,14 @@
 const express = require('express');
+const morgan = require('morgan');
 
 const app = express();
+
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+// middleware and static files
+app.use(morgan('dev'));
 
 app.use(express.urlencoded({ extended: false }));
 
@@ -45,7 +53,3 @@ app.use((req, res) => {
   // res.status(404).sendFile('./views/404.html', { root: __dirname });
   res.status(404).render('404', { title: '404' });
 });
-
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
