@@ -1,11 +1,20 @@
 const express = require('express');
 const morgan = require('morgan');
+const mongoose = require('mongoose');
+const Blog = require('./models/blog');
 
 const app = express();
 
 const PORT = process.env.PORT || 3000;
+// mongoDB connection string
+const mongoURI = 'mongodb://localhost:27017/netninja';
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+mongoose
+  .connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() =>
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
+  )
+  .catch((err) => console.log(err));
 
 // middleware and static files
 app.use(morgan('dev'));
@@ -23,26 +32,22 @@ app.set('views', 'views');
 app.set('view engine', 'ejs');
 
 app.get('/', (req, res) => {
-  const blogs = [
-    {
-      title: 'Yoshi finds eggs',
-      snippet: 'Lorem ipsum dolor sit amet consectetur'
-    },
-    {
-      title: 'Mario finds stars',
-      snippet: 'Lorem ipsum dolor sit amet consectetur'
-    },
-    {
-      title: 'How to defeat bowser',
-      snippet: 'Lorem ipsum dolor sit amet consectetur'
-    }
-  ];
-  res.render('index', { title: 'Home', blogs: blogs });
+  res.redirect('/blogs');
 });
 
 app.get('/about', (req, res) => {
   // res.sendFile('./views/about.html', { root: __dirname });
   res.render('about', { title: 'About' });
+});
+
+// blog routes
+app.get('/blogs', (req, res) => {
+  Blog.find()
+    .sort({ createdAt: -1 })
+    .then((result) => {
+      res.render('index', { title: 'All Blogs', blogs: result });
+    })
+    .catch((err) => console.log(err));
 });
 
 app.get('/blogs/create', (req, res) => {
