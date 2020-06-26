@@ -1,8 +1,7 @@
 const express = require('express');
 const morgan = require('morgan');
 const mongoose = require('mongoose');
-const Blog = require('./models/blog');
-const { render } = require('ejs');
+const blogRoutes = require('./routes/blogRoutes');
 
 const app = express();
 
@@ -23,6 +22,9 @@ app.use(express.urlencoded({ extended: false })); // for accepting form data
 app.use(express.json());
 app.use(express.static('public'));
 
+// blog routes with scoping
+app.use('/blogs', blogRoutes);
+
 // tell express where to find the views you want displayed
 app.set('views', 'views');
 
@@ -36,55 +38,6 @@ app.get('/', (req, res) => {
 app.get('/about', (req, res) => {
   // res.sendFile('./views/about.html', { root: __dirname });
   res.render('about', { title: 'About' });
-});
-
-// blog routes
-app.get('/blogs', (req, res) => {
-  Blog.find()
-    .sort({ createdAt: -1 })
-    .then((result) => {
-      res.render('index', { title: 'All Blogs', blogs: result });
-    })
-    .catch((err) => console.log(err));
-});
-
-app.post('/blogs', (req, res) => {
-  const { title, snippet, body } = req.body;
-  const blog = new Blog({
-    title,
-    snippet,
-    body
-  });
-
-  blog
-    .save()
-    .then((result) => {
-      res.redirect('/blogs');
-    })
-    .catch((err) => console.log(err));
-});
-
-app.get('/blogs/:id', (req, res) => {
-  const id = req.params.id;
-  Blog.findById(id)
-    .then((result) => {
-      res.render('details', { title: 'Blog Details', blog: result });
-    })
-    .catch((err) => console.log(err));
-});
-
-app.delete('/blogs/:id', (req, res) => {
-  const id = req.params.id;
-
-  Blog.findByIdAndDelete(id)
-    .then((result) => {
-      res.json({ redirect: '/blogs' });
-    })
-    .catch((err) => console.log(err));
-});
-
-app.get('/blogs/create', (req, res) => {
-  res.render('create-blog', { title: 'Create Blog' });
 });
 
 app.use((req, res) => {
